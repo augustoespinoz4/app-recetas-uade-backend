@@ -1,5 +1,5 @@
 **🧾 Configuración del Proyecto Yummly App (Backend)**
-Este proyecto está desarrollado en Spring Boot y utiliza una base de datos SQL Server.
+\nEste proyecto está desarrollado en Spring Boot y utiliza una base de datos SQL Server.
 Se requiere configurar algunas propiedades sensibles en un archivo separado no versionado, para poder ejecutarlo correctamente de forma local.
 
 **📦 Requisitos**
