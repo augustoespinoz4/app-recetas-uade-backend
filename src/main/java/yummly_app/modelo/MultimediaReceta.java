@@ -31,8 +31,6 @@ public class MultimediaReceta {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "id_receta")
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
     @JsonIgnore
     private Receta receta;
 

@@ -24,6 +24,7 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "Receta")
@@ -63,12 +64,12 @@ public class Receta {
     @JoinColumn(name = "categoria", referencedColumnName = "nombre")
     private CategoriaReceta categoria;
 
-    @OneToMany(mappedBy = "receta")
-    private List<RecetaIngrediente> ingredientes = new ArrayList<>();;
+    @OneToMany(mappedBy = "receta", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RecetaIngrediente> ingredientes = new ArrayList<>();
 
     @ManyToMany(mappedBy = "recetas")
     @JsonIgnore
-    private List<ListaRecetasIntentar> listas = new ArrayList<>();;
+    private List<ListaRecetasIntentar> listas = new ArrayList<>();
     
     @OneToMany(mappedBy = "receta", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("numeroPaso ASC")

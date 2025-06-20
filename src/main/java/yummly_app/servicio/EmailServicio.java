@@ -14,7 +14,6 @@ public class EmailServicio {
     @Autowired
     private JavaMailSender mailSender;
 
-
 	public void enviarCodigoRecuperacion(String destinatario, String codigo) {
 	    MimeMessage mensaje = mailSender.createMimeMessage();
 	

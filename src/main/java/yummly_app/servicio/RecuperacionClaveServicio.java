@@ -20,7 +20,7 @@ public class RecuperacionClaveServicio {
     @Autowired
     private EmailServicio emailServicio;
 
-    private static final int DURACION_CODIGO_MINUTOS = 10;
+    private static final int DURACION_CODIGO_MINUTOS = 2;
 
     // Genera código, guarda entidad y envía mail
     public void iniciarRecuperacionClave(Usuario usuario) {

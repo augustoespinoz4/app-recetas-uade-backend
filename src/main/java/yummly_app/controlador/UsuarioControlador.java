@@ -13,11 +13,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import yummly_app.dao.UsuarioDAO;
 import yummly_app.dto.CompletarRegistroDTO;
 import yummly_app.dto.RegistroInicialDTO;
+import yummly_app.dto.auth.LoginRequestDTO;
+import yummly_app.dto.auth.LoginResponseDTO;
 import yummly_app.modelo.Usuario;
 import yummly_app.servicio.UsuarioServicio;
 
@@ -30,6 +33,39 @@ public class UsuarioControlador {
 	
     @Autowired
     private UsuarioServicio usuarioServicio;
+    
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequestDTO dto) {
+        try {
+            LoginResponseDTO respuesta = usuarioServicio.login(dto.getAliasOEmail(), dto.getContrasena());
+            return ResponseEntity.ok(respuesta);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
+        }
+    }
+    
+    // POST /usuarios/registro-inicial
+    @PostMapping("/registro-inicial")
+    public ResponseEntity<?> registrarInicial(@RequestBody RegistroInicialDTO dto) {
+        try {
+            Usuario creado = usuarioServicio.registrarUsuarioInicial(dto.getAlias(), dto.getEmail());
+            return ResponseEntity.status(HttpStatus.CREATED).body(creado);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+        }
+    }
+
+    // PUT /usuarios/completar-registro/{id}
+    @PutMapping("/completar-registro/{id}")
+    public ResponseEntity<?> completarRegistro(@PathVariable Long id, @RequestBody CompletarRegistroDTO dto) {
+        try {
+            Usuario actualizado = usuarioServicio.completarRegistro(id, dto.getNombre(), dto.getApellido(), dto.getContrasena());
+            return ResponseEntity.ok(actualizado);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        }
+    }
+    
 	
     // GET /usuarios → devuelve todos los usuarios
     @GetMapping("")
@@ -55,33 +91,11 @@ public class UsuarioControlador {
     }
 
     // Obtener usuario por email
-    @GetMapping("/email/{email}")
-    public ResponseEntity<Usuario> obtenerUsuarioPorEmail(@PathVariable String email) {
+    @GetMapping("/email")
+    public ResponseEntity<Usuario> obtenerUsuarioPorEmail(@RequestParam String email) {
         return usuarioDAO.obtenerUsuarioPorEmail(email)
-                .map(usuario -> ResponseEntity.ok(usuario))
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
-    }
-
-    // POST /usuarios/registro-inicial
-    @PostMapping("/registro-inicial")
-    public ResponseEntity<?> registrarInicial(@RequestBody RegistroInicialDTO dto) {
-        try {
-            Usuario creado = usuarioServicio.registrarUsuarioInicial(dto.getAlias(), dto.getEmail());
-            return ResponseEntity.status(HttpStatus.CREATED).body(creado);
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
-        }
-    }
-
-    // PUT /usuarios/completar-registro/{id}
-    @PutMapping("/completar-registro/{id}")
-    public ResponseEntity<?> completarRegistro(@PathVariable Long id, @RequestBody CompletarRegistroDTO dto) {
-        try {
-            Usuario actualizado = usuarioServicio.completarRegistro(id, dto.getNombre(), dto.getApellido(), dto.getContrasena());
-            return ResponseEntity.ok(actualizado);
-        } catch (RuntimeException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-        }
     }
 
     // PUT /usuarios/{id} → actualizar datos del usuario

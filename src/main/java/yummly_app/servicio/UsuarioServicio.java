@@ -1,16 +1,19 @@
 package yummly_app.servicio;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 import yummly_app.dao.UsuarioDAO;
+import yummly_app.dto.auth.LoginResponseDTO;
+import yummly_app.mapper.UsuarioMapper;
 import yummly_app.modelo.Usuario;
 
 @Service
-public class UsuarioServicio {
+public class UsuarioServicio{
 
     @Autowired
     private UsuarioDAO usuarioDAO;
@@ -88,7 +91,7 @@ public class UsuarioServicio {
 
         usuario.setNombre(nombre);
         usuario.setApellido(apellido);
-        usuario.setContrasenaHash(contrasena);
+        usuario.setContrasenaHash(contrasena);  // Encripta la contraseña
         usuario.setEstadoRegistro("completo");
         
         Usuario actualizado = usuarioDAO.crearUsuario(usuario);
@@ -98,5 +101,29 @@ public class UsuarioServicio {
 
         return actualizado; // save actualiza
     }
+    
+
+    public LoginResponseDTO login(String aliasOEmail, String contrasena) {
+        Optional<Usuario> usuarioOpt = usuarioDAO.obtenerUsuarioPorAlias(aliasOEmail);
+        if (usuarioOpt.isEmpty()) {
+            usuarioOpt = usuarioDAO.obtenerUsuarioPorEmail(aliasOEmail);
+        }
+        if (usuarioOpt.isEmpty()) {
+            throw new RuntimeException("Usuario no encontrado");
+        }
+
+        Usuario usuario = usuarioOpt.get();
+
+        if (!"completo".equalsIgnoreCase(usuario.getEstadoRegistro())) {
+            throw new RuntimeException("Registro incompleto, completar registro antes de iniciar sesión");
+        }
+
+        if (usuario.getContrasenaHash() == null || !usuario.getContrasenaHash().equals(contrasena)) {
+            throw new RuntimeException("Contraseña incorrecta");
+        }
+
+        return UsuarioMapper.toLoginResponseDTO(usuario);
+    }
+
 }
 

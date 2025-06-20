@@ -24,7 +24,7 @@ public class RecuperacionClaveControlador {
     @Autowired
     private RecuperacionClaveServicio recuperacionClaveServicio;
 
-    // 1. Solicitar recuperación de clave
+    // Solicitar recuperación de clave
     @PostMapping("/solicitar")
     public ResponseEntity<String> solicitarCodigo(@RequestParam String email) {
         Optional<Usuario> usuarioOpt = usuarioDAO.obtenerUsuarioPorEmail(email);
@@ -39,7 +39,7 @@ public class RecuperacionClaveControlador {
         return ResponseEntity.ok("Código de recuperación enviado al correo.");
     }
 
-    // 2. Verificar código ingresado por el usuario
+    // Verificar código ingresado por el usuario
     @PostMapping("/verificar")
     public ResponseEntity<String> verificarCodigo(
         @RequestParam String email,
@@ -62,7 +62,6 @@ public class RecuperacionClaveControlador {
         return ResponseEntity.ok("Código verificado correctamente.");
     }
 
- // 3. Actualizar la contraseña
     @PostMapping("/actualizar")
     public ResponseEntity<String> actualizarContrasena(
         @RequestParam String email,
@@ -70,7 +69,6 @@ public class RecuperacionClaveControlador {
         @RequestParam String nuevaContrasena
     ) {
         Optional<Usuario> usuarioOpt = usuarioDAO.obtenerUsuarioPorEmail(email);
-
         if (usuarioOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado.");
         }
@@ -78,12 +76,10 @@ public class RecuperacionClaveControlador {
         Usuario usuario = usuarioOpt.get();
 
         boolean valido = recuperacionClaveServicio.validarCodigo(usuario, codigo);
-
         if (!valido) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Código inválido o expirado.");
         }
 
-        // Guardar la contraseña directamente sin hashear
         usuarioDAO.actualizarContrasena(usuario.getIdUsuario(), nuevaContrasena);
 
         recuperacionClaveServicio.marcarCodigoComoUsado(usuario, codigo);

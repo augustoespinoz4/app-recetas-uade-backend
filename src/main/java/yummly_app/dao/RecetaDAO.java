@@ -39,6 +39,10 @@ public class RecetaDAO {
     public List<Receta> obtenerRecetasPorVisibilidad(boolean publico) {
     	return recetaRepository.findByPublico(publico);
     }
+    
+    public List<Receta> obtenerRecetasQueNoTienenIngrediente(Long idIngrediente) {
+        return recetaRepository.buscarRecetasQueNoTienenIngrediente(idIngrediente);
+    }
 
     public void eliminar(Long id) {
         recetaRepository.deleteById(id);

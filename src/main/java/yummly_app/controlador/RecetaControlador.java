@@ -1,6 +1,5 @@
 package yummly_app.controlador;
 
-import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import yummly_app.dao.RecetaDAO;
 import yummly_app.dao.UsuarioDAO;
 import yummly_app.dao.ValoracionRecetaDAO;
+import yummly_app.dto.CrearRecetaDTO;
 import yummly_app.dto.RecetaDTO;
 import yummly_app.dto.RecetaRespuestaDTO;
 import yummly_app.dto.ValoracionRecetaDTO;
@@ -29,8 +29,8 @@ import yummly_app.mapper.RecetaMapper;
 import yummly_app.mapper.ValoracionRecetaMapper;
 import yummly_app.modelo.CategoriaReceta;
 import yummly_app.modelo.Receta;
-import yummly_app.modelo.Usuario;
 import yummly_app.modelo.ValoracionReceta;
+import yummly_app.servicio.RecetaServicio;
 
 @RestController
 @RequestMapping("/recetas")
@@ -43,26 +43,24 @@ public class RecetaControlador {
     private UsuarioDAO usuarioDAO;
     
     @Autowired 
-    ValoracionRecetaDAO valoracionRecetaDAO;
+    private ValoracionRecetaDAO valoracionRecetaDAO;
+    
+    @Autowired
+    private RecetaServicio recetaServicio;
+
 
     // Crear receta
     @PostMapping("")
-    public ResponseEntity<?> crearReceta(@RequestBody RecetaDTO dto) {
-        Optional<Usuario> usuarioOpt = usuarioDAO.obtenerUsuarioPorId(dto.getIdUsuario());
-        if (usuarioOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Usuario no encontrado");
+    public ResponseEntity<String> crearReceta(@RequestBody CrearRecetaDTO dto) {
+        try {
+            recetaServicio.crearReceta(dto);
+            return ResponseEntity.ok("Receta creada correctamente.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("Error al crear receta: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body("Error inesperado: " + e.getMessage());
         }
-
-        Receta receta = new Receta();
-        receta.setTitulo(dto.getTitulo());
-        receta.setDescripcion(dto.getDescripcion());
-        receta.setCantidadPersonas(dto.getCantidadPersonas());
-        receta.setPublico(dto.isPublico());
-        receta.setCategoria(dto.getCategoria());
-        receta.setUsuario(usuarioOpt.get());
-        receta.setFechaCreacion(LocalDateTime.now());
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(recetaDAO.guardar(receta));
     }
 
     // Obtener todas las recetas públicas
