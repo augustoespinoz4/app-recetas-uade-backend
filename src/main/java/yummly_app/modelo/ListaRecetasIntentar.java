@@ -5,14 +5,14 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -37,11 +37,7 @@ public class ListaRecetasIntentar {
     @Column(length = 100)
     private String nombreLista;
 
-    @ManyToMany
-    @JoinTable(
-        name = "Lista_Recetas_Intentar_Detalle",
-        joinColumns = @JoinColumn(name = "id_lista"),
-        inverseJoinColumns = @JoinColumn(name = "id_receta")
-    )
-    private List<Receta> recetas = new ArrayList<>();
+    @OneToMany(mappedBy = "lista", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ListaRecetasIntentarDetalle> detalles = new ArrayList<>();
+
 }

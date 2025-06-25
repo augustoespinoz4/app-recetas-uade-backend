@@ -13,6 +13,7 @@ public interface ValoracionRecetaRepository extends JpaRepository<ValoracionRece
     List<ValoracionReceta> findByReceta_IdReceta(Long idReceta);
     List<ValoracionReceta> findByReceta_IdRecetaAndEstado(Long idReceta, ValoracionReceta.EstadoValoracion estado);
     Optional<ValoracionReceta> findByReceta_IdRecetaAndUsuario_IdUsuario(Long idReceta, Long idUsuario);
+    List<ValoracionReceta> findByEstado(ValoracionReceta.EstadoValoracion estado);
     @Query(
     	    value = """
     	        SELECT * 

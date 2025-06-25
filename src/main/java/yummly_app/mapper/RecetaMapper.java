@@ -22,9 +22,7 @@ public class RecetaMapper {
             receta.getFechaCreacion(),
             new UsuarioBasicoDTO(
                 receta.getUsuario().getIdUsuario(),
-                receta.getUsuario().getAlias(),
-                receta.getUsuario().getNombre(),
-                receta.getUsuario().getApellido()
+                receta.getUsuario().getAlias()
             ),
             receta.getIngredientes().stream()
                 .map(ri -> new IngredienteRecetaDTO(

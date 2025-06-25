@@ -10,9 +10,7 @@ public class ValoracionRecetaMapper {
         return new ValoracionRecetaDTO(
             new UsuarioBasicoDTO(
                 valoracion.getUsuario().getIdUsuario(),
-                valoracion.getUsuario().getAlias(),
-                valoracion.getUsuario().getNombre(),
-                valoracion.getUsuario().getApellido()
+                valoracion.getUsuario().getAlias()
             ),
             valoracion.getPuntaje(),
             valoracion.getComentario(),

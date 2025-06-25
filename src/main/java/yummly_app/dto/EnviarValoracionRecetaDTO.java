@@ -7,7 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UsuarioBasicoDTO {
+public class EnviarValoracionRecetaDTO {
     private Long idUsuario;
-    private String alias;
+    private int puntaje;        // de 1 a 5
+    private String comentario;
 }
+

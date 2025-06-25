@@ -7,7 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UsuarioBasicoDTO {
-    private Long idUsuario;
-    private String alias;
+public class IngredienteDTO {
+    private Long idIngrediente;
+    private double cantidad;
+    private String unidadMedida;
 }
+

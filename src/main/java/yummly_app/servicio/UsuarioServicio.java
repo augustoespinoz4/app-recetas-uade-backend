@@ -7,9 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
+import yummly_app.dao.ListaRecetasIntentarDAO;
 import yummly_app.dao.UsuarioDAO;
 import yummly_app.dto.auth.LoginResponseDTO;
 import yummly_app.mapper.UsuarioMapper;
+import yummly_app.modelo.ListaRecetasIntentar;
 import yummly_app.modelo.Usuario;
 
 @Service
@@ -17,6 +19,9 @@ public class UsuarioServicio{
 
     @Autowired
     private UsuarioDAO usuarioDAO;
+    
+    @Autowired
+    private ListaRecetasIntentarDAO listaRecetasIntentarDAO;
 
     @Autowired
     private EmailServicio emailServicio;
@@ -30,14 +35,11 @@ public class UsuarioServicio{
         }
 
         try {
-            // Intentar enviar el mail de confirmación
             emailServicio.enviarMensajeDeConfirmacion(email, alias);
         } catch (Exception e) {
-            // Captura error en envío de mail
             throw new RuntimeException("Error al enviar el correo de confirmación. Por favor, verifica el email ingresado.");
         }
 
-        // El mail se envió correctamente, entonces guardamos el usuario
         Usuario nuevo = new Usuario();
         nuevo.setAlias(alias);
         nuevo.setEmail(email);
@@ -45,8 +47,17 @@ public class UsuarioServicio{
         nuevo.setEstadoRegistro("incompleto");
         nuevo.setFechaRegistro(LocalDateTime.now());
 
-        return usuarioDAO.crearUsuario(nuevo);
+        Usuario guardado = usuarioDAO.crearUsuario(nuevo);
+
+        // Crear automáticamente la lista de recetas a intentar
+        ListaRecetasIntentar lista = new ListaRecetasIntentar();
+        lista.setUsuario(guardado);
+        lista.setNombreLista("Recetas a intentar");
+        listaRecetasIntentarDAO.crearLista(lista);
+
+        return guardado;
     }
+
 
     
     // Registro inicial con alias y email
@@ -57,16 +68,13 @@ public class UsuarioServicio{
         if (usuarioDAO.existeUsuarioPorEmail(email)) {
             throw new IllegalArgumentException("El email ya está en uso");
         }
-        
+
         try {
-            // Intentar enviar el mail de confirmación
             emailServicio.enviarMensajeDeConfirmacion(email, alias);
         } catch (Exception e) {
-            // Captura error en envío de mail
             throw new RuntimeException("Error al enviar el correo de confirmación. Por favor, verifica el email ingresado.");
         }
-        
-        // El mail se envió correctamente, entonces guardamos el usuario
+
         Usuario nuevo = new Usuario();
         nuevo.setAlias(alias);
         nuevo.setEmail(email);
@@ -75,6 +83,12 @@ public class UsuarioServicio{
         nuevo.setFechaRegistro(LocalDateTime.now());
 
         Usuario guardado = usuarioDAO.crearUsuario(nuevo);
+
+        // Crear automáticamente la lista de recetas a intentar
+        ListaRecetasIntentar lista = new ListaRecetasIntentar();
+        lista.setUsuario(guardado);
+        lista.setNombreLista("Recetas a intentar");
+        listaRecetasIntentarDAO.crearLista(lista);
 
         return guardado;
     }

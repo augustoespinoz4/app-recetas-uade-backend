@@ -2,7 +2,6 @@ package yummly_app.controlador;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,17 +17,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import yummly_app.dao.ListaRecetasIntentarDAO;
 import yummly_app.dao.RecetaDAO;
 import yummly_app.dao.UsuarioDAO;
 import yummly_app.dao.ValoracionRecetaDAO;
 import yummly_app.dto.CrearRecetaDTO;
-import yummly_app.dto.RecetaDTO;
+import yummly_app.dto.EnviarValoracionRecetaDTO;
+import yummly_app.dto.ModificarRecetaDTO;
 import yummly_app.dto.RecetaRespuestaDTO;
+import yummly_app.dto.UsuarioBasicoDTO;
 import yummly_app.dto.ValoracionRecetaDTO;
 import yummly_app.mapper.RecetaMapper;
 import yummly_app.mapper.ValoracionRecetaMapper;
 import yummly_app.modelo.CategoriaReceta;
 import yummly_app.modelo.Receta;
+import yummly_app.modelo.Usuario;
 import yummly_app.modelo.ValoracionReceta;
 import yummly_app.servicio.RecetaServicio;
 
@@ -41,6 +44,9 @@ public class RecetaControlador {
 
     @Autowired
     private UsuarioDAO usuarioDAO;
+    
+    @Autowired
+    private ListaRecetasIntentarDAO listaRecetasIntentarDAO;
     
     @Autowired 
     private ValoracionRecetaDAO valoracionRecetaDAO;
@@ -74,6 +80,54 @@ public class RecetaControlador {
             .collect(Collectors.toList());
 
         return ResponseEntity.ok(recetaDTOs);
+    }
+    
+    // Obtener recetas que tienen un ingrediente específico
+    @GetMapping("/ingrediente/{idIngrediente}")
+    public ResponseEntity<List<RecetaRespuestaDTO>> obtenerRecetasPorIngrediente(@PathVariable Long idIngrediente) {
+        List<Receta> recetas = recetaDAO.obtenerRecetasPorIngrediente(idIngrediente);
+
+        List<RecetaRespuestaDTO> recetaDTOs = recetas.stream()
+            .filter(Receta::isPublico)
+            .map(RecetaMapper::toDTO)
+            .collect(Collectors.toList());
+
+        return ResponseEntity.ok(recetaDTOs);
+    }
+
+    // Obtener recetas que NO tienen un ingrediente específico
+    @GetMapping("/ingrediente/{idIngrediente}/sin")
+    public ResponseEntity<List<RecetaRespuestaDTO>> obtenerRecetasPorNoIngrediente(@PathVariable Long idIngrediente) {
+        List<Receta> recetas = recetaDAO.obtenerRecetasQueNoTienenIngrediente(idIngrediente);
+
+        List<RecetaRespuestaDTO> recetaDTOs = recetas.stream()
+            .filter(Receta::isPublico)
+            .map(RecetaMapper::toDTO)
+            .collect(Collectors.toList());
+
+        return ResponseEntity.ok(recetaDTOs);
+    }
+    
+    // Obtener recetas guardadas por un usuario
+    @GetMapping("/lista-recetas-intentar/{idUsuario}")
+    public ResponseEntity<List<RecetaRespuestaDTO>> obtenerRecetasIntentarPorUsuario(@PathVariable Long idUsuario) {
+        try {
+            Usuario usuario = usuarioDAO.obtenerUsuarioPorId(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            List<Receta> recetasGuardadas = listaRecetasIntentarDAO.obtenerRecetasGuardadasUsuario(usuario);
+
+            List<RecetaRespuestaDTO> recetaDTOs = recetasGuardadas.stream()
+                .map(RecetaMapper::toDTO)
+                .collect(Collectors.toList());
+
+            return ResponseEntity.ok(recetaDTOs);
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     // Obtener recetas por usuario
@@ -174,7 +228,7 @@ public class RecetaControlador {
         return ResponseEntity.ok(dtoList);
     }
     
- // GET /recetas/ordenadas?estado=aprobada&publico=true&criterio=fecha
+    // GET /recetas/ordenadas?estado=aprobada&publico=true&criterio=fecha
     @GetMapping("/ordenadas")
     public ResponseEntity<List<RecetaRespuestaDTO>> obtenerRecetasOrdenadas(
             @RequestParam Receta.EstadoReceta estado,
@@ -197,6 +251,12 @@ public class RecetaControlador {
 
         return ResponseEntity.ok(dtos);
     }
+    
+    @GetMapping("/existe")
+    public ResponseEntity<Boolean> existeRecetaUsuario(@RequestParam Long idUsuario, @RequestParam String titulo) {
+        boolean existe = recetaDAO.buscarPorUsuarioYTitulo(idUsuario, titulo).isPresent();
+        return ResponseEntity.ok(existe);
+    }
 
     // Eliminar receta
     @DeleteMapping("/{id}")
@@ -210,19 +270,56 @@ public class RecetaControlador {
 
     // Actualizar receta
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizarReceta(@PathVariable Long id, @RequestBody RecetaDTO dto) {
-        Optional<Receta> recetaOpt = recetaDAO.buscarPorId(id);
-        if (recetaOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<?> actualizarReceta(@PathVariable Long id, @RequestBody ModificarRecetaDTO dto) {
+        try {
+            recetaServicio.modificarReceta(id, dto);
+            return ResponseEntity.ok("Receta actualizada correctamente");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("Error al modificar receta: " + e.getMessage());
         }
-        
-        Receta receta = recetaOpt.get();
-        receta.setTitulo(dto.getTitulo());
-        receta.setDescripcion(dto.getDescripcion());
-        receta.setCantidadPersonas(dto.getCantidadPersonas());
-        receta.setPublico(dto.isPublico());
-        receta.setCategoria(dto.getCategoria());
+    }
+    
+    @PutMapping("/{id}/visibilidad")
+    public ResponseEntity<String> cambiarVisibilidad(@PathVariable Long id) {
+        try {
+            recetaServicio.cambiarVisibilidad(id);
+            return ResponseEntity.ok("Visibilidad cambiada correctamente.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+    
+    // Obtener valoraciones aprobadas de una receta
+    @GetMapping("/{idReceta}/valoraciones")
+    public ResponseEntity<List<ValoracionRecetaDTO>> obtenerValoracionesAprobadasPorReceta(@PathVariable Long idReceta) {
+        try {
+            List<ValoracionRecetaDTO> valoraciones = valoracionRecetaDAO.obtenerValoracionesAprobadas(idReceta)
+                .stream()
+                .map(v -> new ValoracionRecetaDTO(
+                    new UsuarioBasicoDTO(v.getUsuario().getIdUsuario(), v.getUsuario().getAlias()),
+                    v.getPuntaje(),
+                    v.getComentario(),
+                    v.getEstado(),
+                    v.getFechaValoracion()
+                ))
+                .collect(Collectors.toList());
 
-        return ResponseEntity.ok(recetaDAO.guardar(receta));
+            return ResponseEntity.ok(valoraciones);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping("/{id}/valorar")
+    public ResponseEntity<?> valorarReceta(
+        @PathVariable Long id,
+        @RequestBody EnviarValoracionRecetaDTO dto
+    ) {
+        try {
+            recetaServicio.valorarReceta(id, dto);
+            return ResponseEntity.ok("Valoración registrada correctamente. Será revisada antes de ser publicada.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
     }
 }

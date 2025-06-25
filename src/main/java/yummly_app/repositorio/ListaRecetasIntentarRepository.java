@@ -10,7 +10,6 @@ import yummly_app.modelo.Usuario;
 
 public interface ListaRecetasIntentarRepository extends JpaRepository<ListaRecetasIntentar, Long> {
     Optional<ListaRecetasIntentar> findByUsuarioIdUsuario(Long idUsuario);
-    boolean existsByUsuarioAndRecetas(Usuario usuario, Receta receta);
     Optional<ListaRecetasIntentar> findByUsuario(Usuario usuario);
     
 }

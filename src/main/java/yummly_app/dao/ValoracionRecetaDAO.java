@@ -21,6 +21,14 @@ public class ValoracionRecetaDAO {
     public ValoracionReceta guardarValoracion(ValoracionReceta valoracion) {
         return valoracionRecetaRepository.save(valoracion);
     }
+    
+    public Optional<ValoracionReceta> obtenerValoracionPorId(Long id) {
+    	return valoracionRecetaRepository.findById(id);
+    }
+    
+    public List<ValoracionReceta> obtenerValoracionesPorEstado(ValoracionReceta.EstadoValoracion estado) {
+        return valoracionRecetaRepository.findByEstado(estado);
+    }
 
     // Obtener valoración por receta y usuario
     public Optional<ValoracionReceta> obtenerValoracionPorRecetaYUsuario(Long idReceta, Long idUsuario) {
@@ -33,6 +41,7 @@ public class ValoracionRecetaDAO {
     }
 
     // Obtener valoraciones filtradas por estado
+    
     public List<ValoracionReceta> obtenerValoracionesPorRecetaYEstado(Long idReceta, EstadoValoracion estado) {
         return valoracionRecetaRepository.findByReceta_IdRecetaAndEstado(idReceta, estado);
     }
@@ -51,5 +60,11 @@ public class ValoracionRecetaDAO {
     @Transactional
     public void eliminarValoracionPorId(Long idValoracion) {
         valoracionRecetaRepository.deleteById(idValoracion);
+    }
+    
+    public boolean yaValoro(Long idReceta, Long idUsuario) {
+        return valoracionRecetaRepository
+            .findByReceta_IdRecetaAndUsuario_IdUsuario(idReceta, idUsuario)
+            .isPresent();
     }
 }

@@ -8,8 +8,10 @@ import org.springframework.stereotype.Repository;
 
 import jakarta.transaction.Transactional;
 import yummly_app.modelo.ListaRecetasIntentar;
+import yummly_app.modelo.ListaRecetasIntentarDetalle;
 import yummly_app.modelo.Receta;
 import yummly_app.modelo.Usuario;
+import yummly_app.repositorio.ListaRecetasIntentarDetalleRepository;
 import yummly_app.repositorio.ListaRecetasIntentarRepository;
 
 @Repository
@@ -17,6 +19,10 @@ public class ListaRecetasIntentarDAO {
 
     @Autowired
     private ListaRecetasIntentarRepository listaRepository;
+    
+    @Autowired
+    private ListaRecetasIntentarDetalleRepository detalleRepository;
+
 
     // Crear una nueva lista
     public ListaRecetasIntentar crearLista(ListaRecetasIntentar lista) {
@@ -42,10 +48,9 @@ public class ListaRecetasIntentarDAO {
     public Optional<ListaRecetasIntentar> obtenerListaPorIdUsuario(Long idUsuario) {
         return listaRepository.findByUsuarioIdUsuario(idUsuario);
     }
-
-    // Verificar si una receta está en la lista del usuario
-    public boolean recetaYaAgregada(Usuario usuario, Receta receta) {
-        return listaRepository.existsByUsuarioAndRecetas(usuario, receta);
+    
+    public List<Receta> obtenerRecetasGuardadasUsuario(Usuario usuario) {
+        return detalleRepository.findRecetasByUsuario(usuario);
     }
 
     // Agregar una receta a la lista del usuario
@@ -54,20 +59,29 @@ public class ListaRecetasIntentarDAO {
         ListaRecetasIntentar lista = listaRepository.findByUsuario(usuario)
             .orElseThrow(() -> new RuntimeException("Lista no encontrada para el usuario"));
 
-        if (!lista.getRecetas().contains(receta)) {
-            lista.getRecetas().add(receta);
+        boolean yaExiste = lista.getDetalles().stream()
+            .anyMatch(detalle -> detalle.getReceta().equals(receta));
+
+        if (!yaExiste) {
+            ListaRecetasIntentarDetalle nuevoDetalle = new ListaRecetasIntentarDetalle(lista, receta);
+            lista.getDetalles().add(nuevoDetalle);
             listaRepository.save(lista);
         }
     }
-
+    
     // Eliminar una receta de la lista del usuario
     @Transactional
     public void eliminarRecetaDeLista(Usuario usuario, Receta receta) {
         ListaRecetasIntentar lista = listaRepository.findByUsuario(usuario)
             .orElseThrow(() -> new RuntimeException("Lista no encontrada para el usuario"));
 
-        if (lista.getRecetas().contains(receta)) {
-            lista.getRecetas().remove(receta);
+        ListaRecetasIntentarDetalle detalleAEliminar = lista.getDetalles().stream()
+            .filter(detalle -> detalle.getReceta().equals(receta))
+            .findFirst()
+            .orElse(null);
+
+        if (detalleAEliminar != null) {
+            lista.getDetalles().remove(detalleAEliminar);
             listaRepository.save(lista);
         }
     }

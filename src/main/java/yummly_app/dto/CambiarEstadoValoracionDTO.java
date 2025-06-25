@@ -3,11 +3,11 @@ package yummly_app.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import yummly_app.modelo.ValoracionReceta;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UsuarioBasicoDTO {
-    private Long idUsuario;
-    private String alias;
+public class CambiarEstadoValoracionDTO {
+    private ValoracionReceta.EstadoValoracion nuevoEstado;
 }

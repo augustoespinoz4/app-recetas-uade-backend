@@ -23,7 +23,12 @@ public class RecetaDAO {
     public Optional<Receta> buscarPorId(Long id) {
         return recetaRepository.findById(id);
     }
-
+    
+    // Método nuevo para buscar receta por usuario y título
+    public Optional<Receta> buscarPorUsuarioYTitulo(Long idUsuario, String titulo) {
+        return recetaRepository.findByUsuario_IdUsuarioAndTituloIgnoreCase(idUsuario, titulo);
+    }
+    
     public List<Receta> buscarTodas() {
         return recetaRepository.findAll();
     }
@@ -38,6 +43,10 @@ public class RecetaDAO {
     
     public List<Receta> obtenerRecetasPorVisibilidad(boolean publico) {
     	return recetaRepository.findByPublico(publico);
+    }
+    
+    public List<Receta> obtenerRecetasPorIngrediente(Long idIngrediente) {
+        return recetaRepository.buscarRecetasPorIngrediente(idIngrediente);
     }
     
     public List<Receta> obtenerRecetasQueNoTienenIngrediente(Long idIngrediente) {
@@ -63,5 +72,7 @@ public class RecetaDAO {
     public List<Receta> buscarPorCategoria(CategoriaReceta categoria) {
         return recetaRepository.findByCategoria(categoria);
     }
+    
+    
     
 }

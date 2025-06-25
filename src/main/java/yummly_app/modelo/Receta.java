@@ -67,9 +67,9 @@ public class Receta {
     @OneToMany(mappedBy = "receta", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RecetaIngrediente> ingredientes = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "recetas")
+    @OneToMany(mappedBy = "receta", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
-    private List<ListaRecetasIntentar> listas = new ArrayList<>();
+    private List<ListaRecetasIntentarDetalle> listas = new ArrayList<>();
     
     @OneToMany(mappedBy = "receta", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("numeroPaso ASC")

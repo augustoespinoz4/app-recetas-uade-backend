@@ -10,15 +10,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ModificarRecetaDTO {
-	private Long idReceta;
-    private Long idUsuario;
     private String titulo;
     private String descripcion;
     private int cantidadPersonas;
     private boolean publico;
-    private String categoria; // nombre de la categoría
+    private String categoria;
 
-    private List<IngredienteRecetaDTO> ingredientes;
+    private List<IngredienteDTO> ingredientes;
     private List<PasoRecetaDTO> pasos;
-    private List<MultimediaRecetaDTO> multimediaReceta;
+    private List<MultimediaRecetaDTO> multimediaReceta; // multimedia de receta
 }
