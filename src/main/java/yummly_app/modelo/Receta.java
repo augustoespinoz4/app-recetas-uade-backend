@@ -35,7 +35,7 @@ public class Receta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idReceta;
-    
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private EstadoReceta estado = EstadoReceta.pendiente;
@@ -70,21 +70,30 @@ public class Receta {
     @OneToMany(mappedBy = "receta", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<ListaRecetasIntentarDetalle> listas = new ArrayList<>();
-    
+
     @OneToMany(mappedBy = "receta", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("numeroPaso ASC")
     private List<PasoReceta> pasos = new ArrayList<>();
-    
+
     @OneToMany(mappedBy = "receta", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MultimediaReceta> multimedia = new ArrayList<>();
-    
+
     @OneToMany(mappedBy = "receta", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ValoracionReceta> valoraciones = new ArrayList<>();
-    
+
     public enum EstadoReceta {
         pendiente,
         aprobada,
         rechazada;
+    }
+
+    @JsonIgnore
+    public Double getPromedioValoraciones() {
+        if (valoraciones == null || valoraciones.isEmpty()) {
+            return null;
+        }
+        double suma = valoraciones.stream().mapToDouble(ValoracionReceta::getPuntaje).sum();
+        return Math.round((suma / valoraciones.size()) * 10.0) / 10.0; // redondeado a 1 decimal
     }
 }
 

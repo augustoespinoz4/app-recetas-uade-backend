@@ -16,7 +16,7 @@ public class ModificarRecetaDTO {
     private boolean publico;
     private String categoria;
 
-    private List<IngredienteDTO> ingredientes;
+    private List<IngredienteRecetaDTO> ingredientes;
     private List<PasoRecetaDTO> pasos;
     private List<MultimediaRecetaDTO> multimediaReceta; // multimedia de receta
 }

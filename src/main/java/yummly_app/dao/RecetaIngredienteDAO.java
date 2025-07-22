@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import org.springframework.transaction.annotation.Transactional;
 import yummly_app.modelo.Receta;
 import yummly_app.modelo.RecetaIngrediente;
 import yummly_app.modelo.RecetaIngredienteId;
@@ -16,6 +17,11 @@ public class RecetaIngredienteDAO {
 
     @Autowired
     private RecetaIngredienteRepository recetaIngredienteRepository;
+
+    @Transactional
+    public void deleteAllByReceta(Receta receta) {
+        recetaIngredienteRepository.deleteAllByReceta(receta);
+    }
 
     public RecetaIngrediente guardarIngrediente(RecetaIngrediente recetaIngrediente) {
         return recetaIngredienteRepository.save(recetaIngrediente);
@@ -28,7 +34,7 @@ public class RecetaIngredienteDAO {
     public List<RecetaIngrediente> obtenerTodasRecetaIngrediente() {
         return recetaIngredienteRepository.findAll();
     }
-    
+
     // Trae todos los ingredientes de una receta específica
     public List<RecetaIngrediente> obtenerIngredientesDeReceta(Long idReceta) {
         return recetaIngredienteRepository.findAllByRecetaIdReceta(idReceta);
@@ -46,7 +52,7 @@ public class RecetaIngredienteDAO {
     public void eliminar(RecetaIngredienteId id) {
         recetaIngredienteRepository.deleteById(id);
     }
-    
+
     // Elimina todos los ingredientes asociados a una receta
     public void eliminarTodosLosIngredientesDeReceta(Receta receta) {
         recetaIngredienteRepository.deleteAllByReceta(receta);
